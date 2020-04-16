@@ -103,7 +103,7 @@ func unmarshal(b []byte, i int, closeBracket string, parent *Elem) ([]XMLMarshal
 		// tag end. maybe followed by bracket.
 		nspace := len(b[i:]) - len(bytes.TrimLeft(b[i:], " \t\n"))
 		if nspace != 0 {
-			xms = append(xms, Text(b[i:i+nspace]))
+			// does not count space from > to [.
 			i += nspace
 		}
 		if i >= len(b) {

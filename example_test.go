@@ -27,7 +27,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		{
-			b: []byte("<a>[` hi! <b>[``<c>[```main```]``] bye! `]"),
+			b: []byte("<a> [` hi! <b> [``<c> [```main```]``] bye! `]"),
 			want: &Elem{
 				children: []XMLMarshaler{
 					&Elem{
