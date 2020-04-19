@@ -1,9 +1,25 @@
 # bml
 bml is a xml/html variant with brackets.
 
-currently Unmarshal doesn't check the original xml is well-formed.
+I created it because I wanted to read/write html templates without use of xml syntax.
+(which is hard to debug in my editor.)
 
-these are equivalent.
+So it has a replacement of html/template.ParseGlob function.
+
+```
+tmpl := template.Must(bml.ToHTMLParseGlob("", template.FuncMap{}, "tmpl/*.bml"))
+```
+
+
+### Note
+
+Unmarshal doesn't check the original xml is well-formed.
+So it can decode html as well.
+
+
+### Syntax
+
+These are equivalent.
 
 bml
 
@@ -22,13 +38,15 @@ xml/html
 </a>
 ```
 
-if you need to treat content of a tag as raw string
+#### Tags with backquotes
+
+If you need to treat content of a tag as raw string
 add backquote(`) to brackets.
 
-to avoid collision with content, number of backquotes is your choice
+To avoid collision with the content, number of backquotes is your choice,
 but ensure those are matched at both open, close brackets.
 
-a tag with backquotes is always a leaf tag.
+A tag with backquotes is always a leaf tag.
 
 bml
 ```
