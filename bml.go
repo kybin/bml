@@ -113,17 +113,31 @@ func unmarshal(b []byte, i int, closeBracket string, parent *Elem) ([]XMLMarshal
 			break
 		}
 		if b[i] == '[' {
+			i += 1
 			// find number of tailing backquotes
 			// when a bracket starts with [``, it will find ``] close bracket.
-			nbq := len(b[i+1:]) - len(bytes.TrimLeft(b[i+1:], "`"))
+			nbq := len(b[i:]) - len(bytes.TrimLeft(b[i:], "`"))
+			i += nbq
 			closeb := strings.Repeat("`", nbq) + "]"
-			ch, ii, err := unmarshal(b, i+nbq+1, closeb, e)
-			if err != nil {
-				return nil, ii, err
-			}
-			i = ii
-			if string(b[i:i+len(closeb)]) != closeb {
-				return nil, i, fmt.Errorf("content does not properly parsed")
+			var ch []XMLMarshaler
+			if nbq != 0 {
+				// raw string tag
+				j := bytes.Index(b[i:], []byte(closeb))
+				if j == len(b[i:]) {
+					return nil, i, fmt.Errorf("raw string tag not ended")
+				}
+				ch = []XMLMarshaler{Text(b[i : i+j])}
+				i += j
+			} else {
+				// normal tag
+				var err error
+				ch, i, err = unmarshal(b, i, closeb, e)
+				if err != nil {
+					return nil, i, err
+				}
+				if string(b[i:i+len(closeb)]) != closeb {
+					return nil, i, fmt.Errorf("content does not properly parsed")
+				}
 			}
 			e.children = ch
 			e.endTag = "</" + e.name + ">"
