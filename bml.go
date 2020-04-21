@@ -154,7 +154,7 @@ func unmarshal(b []byte, i int, closeBracket string, parent *Elem) ([]XMLMarshal
 	return xms, i, nil
 }
 
-func ToHTMLParseGlob(name string, fmap template.FuncMap, pattern string) (*template.Template, error) {
+func ToHTMLParseGlob(t *template.Template, pattern string) (*template.Template, error) {
 	filenames, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
@@ -162,7 +162,6 @@ func ToHTMLParseGlob(name string, fmap template.FuncMap, pattern string) (*templ
 	if len(filenames) == 0 {
 		return nil, fmt.Errorf("bml: pattern matches no files: %#q", pattern)
 	}
-	t := template.New(name).Funcs(fmap)
 	for _, filename := range filenames {
 		b, err := ioutil.ReadFile(filename)
 		if err != nil {
@@ -175,11 +174,16 @@ func ToHTMLParseGlob(name string, fmap template.FuncMap, pattern string) (*templ
 		xb := el.XMLMarshal()
 		s := string(xb)
 		name := filepath.Base(filename)
-		// If this file has the same name as t,
-		// this file becomes the contents of t,
-		// so `t, err := New(name).Funcs(xxx).ParseFiles(name)` works.
-		// Otherwise we create a new template associated with t.
+		// First template becomes return value if not already defined,
+		// and we use that one for subsequent New calls to associate
+		// all the templates together. Also, if this file has the same name
+		// as t, this file becomes the contents of t, so
+		//  t, err := New(name).Funcs(xxx).ParseFiles(name)
+		// works. Otherwise we create a new template associated with t.
 		var tmpl *template.Template
+		if t == nil {
+			t = New(name)
+		}
 		if name == t.Name() {
 			tmpl = t
 		} else {
