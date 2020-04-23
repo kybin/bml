@@ -154,7 +154,7 @@ func unmarshal(b []byte, i int, closeBracket string, parent *Elem) ([]XMLMarshal
 	return xms, i, nil
 }
 
-func ToHTMLParseGlob(t *template.Template, pattern string) (*template.Template, error) {
+func ToHTMLTemplate(t *template.Template, pattern string) (*template.Template, error) {
 	filenames, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func ToHTMLParseGlob(t *template.Template, pattern string) (*template.Template, 
 		// works. Otherwise we create a new template associated with t.
 		var tmpl *template.Template
 		if t == nil {
-			t = New(name)
+			t = template.New(name)
 		}
 		if name == t.Name() {
 			tmpl = t
