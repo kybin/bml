@@ -7,7 +7,7 @@ I created it because I wanted to read/write html templates without use of xml sy
 So it has a replacement of html/template.ParseGlob function.
 
 ```
-tmpl := template.Must(bml.ToHTMLParseGlob("", template.FuncMap{}, "tmpl/*.bml"))
+tmpl := template.Must(bml.ToHTMLTemplate(template.New("").Funcs(yourFuncs), "tmpl/*.bml"))
 ```
 
 
