@@ -32,10 +32,6 @@ func (t Text) XMLMarshal() []byte {
 	return []byte(t)
 }
 
-func (t Text) String() string {
-	return string(t)
-}
-
 type XMLMarshaler interface {
 	XMLMarshal() []byte
 }
@@ -101,18 +97,15 @@ func unmarshal(b []byte, i int, closeBracket string, parent *Elem) ([]XMLMarshal
 		e.name = strings.Fields(e.startTag[1 : len(e.startTag)-1])[0]
 		i += j + 1
 		if i >= len(b) {
+			xms = append(xms, e)
 			break
 		}
 		// tag end. maybe followed by bracket.
-		nspace := len(b[i:]) - len(bytes.TrimLeft(b[i:], " \t\n"))
-		if nspace != 0 {
-			// does not count space from > to [.
-			i += nspace
-		}
-		if i >= len(b) {
-			break
-		}
+		nspace := len(b[i:]) - len(bytes.TrimLeft(b[i:], " \t"))
+		space := Text(b[i : i+nspace])
+		i += nspace
 		if b[i] == '[' {
+			// does not count space from > to [.
 			i += 1
 			// find number of tailing backquotes
 			// when a bracket starts with [``, it will find ``] close bracket.
@@ -142,10 +135,15 @@ func unmarshal(b []byte, i int, closeBracket string, parent *Elem) ([]XMLMarshal
 			e.children = ch
 			e.endTag = "</" + e.name + ">"
 			i += len(closeb)
+			xms = append(xms, e)
 		} else {
+			// bracket is not exist in the tag
 			e.endTag = ""
+			xms = append(xms, e)
+			if nspace != 0 {
+				xms = append(xms, space)
+			}
 		}
-		xms = append(xms, e)
 		// find the next tag.
 	}
 	if i > len(b) {
@@ -174,6 +172,14 @@ func ToHTMLTemplate(t *template.Template, pattern string) (*template.Template, e
 		xb := el.XMLMarshal()
 		s := string(xb)
 		name := filepath.Base(filename)
+
+		// code for debugging
+		//
+		// err = ioutil.WriteFile(strings.TrimSuffix(filename, filepath.Ext(filename))+".html", []byte(s), 0644)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
 		// First template becomes return value if not already defined,
 		// and we use that one for subsequent New calls to associate
 		// all the templates together. Also, if this file has the same name

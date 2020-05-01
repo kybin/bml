@@ -72,12 +72,35 @@ func TestUnmarshal(t *testing.T) {
 				},
 			},
 		},
+		{
+			b: []byte(`<script />
+<script />`),
+			want: &Elem{
+				children: []XMLMarshaler{
+					&Elem{
+						name:     "script",
+						startTag: "<script />",
+						endTag:   "",
+						children: nil,
+					},
+					Text("\n"),
+					&Elem{
+						name:     "script",
+						startTag: "<script />",
+						endTag:   "",
+						children: nil,
+					},
+				},
+			},
+		},
 	}
 	for _, c := range cases {
 		got, err := Unmarshal(c.b)
 		if err != nil {
 			t.Fatal(err)
 		}
+		t.Logf("want.children: %v", c.want.children)
+		t.Logf("got.children: %v", got.children)
 		if !reflect.DeepEqual(got, c.want) {
 			t.Fatalf("Unmarshal(%s): want %s, got %s", c.b, c.want.XMLMarshal(), got.XMLMarshal())
 		}
